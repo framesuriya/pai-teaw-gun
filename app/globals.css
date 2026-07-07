@@ -8,8 +8,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "IBM Plex Thai", system-ui, sans-serif;
-  --font-mono: var(--font-ibm-plex-mono);
+  --font-sans: "Prompt", system-ui, sans-serif;
+  --font-mono: "IBM Plex Sans", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +22,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-ibm-plex-thai), "IBM Plex Thai", system-ui, sans-serif;
+  font-family: "Prompt", "IBM Plex Sans", system-ui, sans-serif;
 }
