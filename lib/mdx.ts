@@ -6,6 +6,33 @@ const contentDirectory = path.join(process.cwd(), 'contents');
 
 export type PostStatus = 'review' | 'planning';
 
+export interface TripPlace {
+    name: string;
+    area?: string;
+    priority?: number; // 1-3
+    mapUrl?: string;
+    note?: string;
+}
+
+export interface TripItineraryBlock {
+    time?: string; // Morning / Afternoon / Evening / HH:MM
+    title?: string;
+    text?: string;
+}
+
+export interface TripItineraryDay {
+    day: number;
+    date?: string;
+    title?: string;
+    blocks?: TripItineraryBlock[];
+}
+
+export interface TripBudgetItem {
+    category: string;
+    planned?: number;
+    actual?: number;
+}
+
 export interface BlogPost {
     slug: string;
     title: string;
@@ -13,16 +40,26 @@ export interface BlogPost {
     description?: string;
     category?: string;
     location?: string;
+    country?: string;
+    city?: string;
     status: PostStatus;
     startDate?: string;
     endDate?: string;
     content: string;
     filePath: string;
     cover: string;
+    // Trip-specific (typically present on status === 'planning' posts)
+    participants?: string[];
+    budget?: number;
+    currency?: string;
+    itinerary?: TripItineraryDay[];
+    places?: TripPlace[];
+    budgetBreakdown?: TripBudgetItem[];
 }
 
 /**
- * Get all MDX files recursively from the contents directory
+ * Get all MDX files recursively from the contents directory.
+ * Files or folders whose name starts with `_` are skipped — useful for templates.
  */
 export function getAllMdxFiles(dir: string = contentDirectory): string[] {
     const files: string[] = [];
@@ -30,6 +67,8 @@ export function getAllMdxFiles(dir: string = contentDirectory): string[] {
     const items = fs.readdirSync(dir);
 
     for (const item of items) {
+        if (item.startsWith('_')) continue;
+
         const fullPath = path.join(dir, item);
         const stat = fs.statSync(fullPath);
 
@@ -82,12 +121,20 @@ export async function getAllPosts(): Promise<BlogPost[]> {
             description: data.description,
             category: data.category,
             location: data.location,
+            country: data.country,
+            city: data.city,
             status: normalizeStatus(data.status),
             startDate: data.startDate,
             endDate: data.endDate,
             content,
             filePath,
             cover: data.cover,
+            participants: Array.isArray(data.participants) ? data.participants : undefined,
+            budget: typeof data.budget === 'number' ? data.budget : undefined,
+            currency: data.currency,
+            itinerary: Array.isArray(data.itinerary) ? data.itinerary : undefined,
+            places: Array.isArray(data.places) ? data.places : undefined,
+            budgetBreakdown: Array.isArray(data.budgetBreakdown) ? data.budgetBreakdown : undefined,
         };
     });
 
@@ -128,4 +175,51 @@ export async function getAllCategories(): Promise<string[]> {
 export async function getPostsByStatus(status: PostStatus): Promise<BlogPost[]> {
     const posts = await getAllPosts();
     return posts.filter((post) => post.status === status);
+}
+
+/**
+ * Format a start/end date pair as a short human-readable range.
+ * Returns null if neither date is provided.
+ */
+export function formatDateRange(start?: string, end?: string): string | null {
+    if (!start && !end) return null;
+    const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    const yearOpts: Intl.DateTimeFormatOptions = {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    };
+    if (start && end) {
+        const s = new Date(start);
+        const e = new Date(end);
+        if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) {
+            return start && end ? `${start} – ${end}` : start || end || null;
+        }
+        if (s.getFullYear() === e.getFullYear()) {
+            return `${s.toLocaleDateString('en-US', opts)} – ${e.toLocaleDateString('en-US', yearOpts)}`;
+        }
+        return `${s.toLocaleDateString('en-US', yearOpts)} – ${e.toLocaleDateString('en-US', yearOpts)}`;
+    }
+    const only = new Date(start || end!);
+    if (Number.isNaN(only.getTime())) return start || end || null;
+    return only.toLocaleDateString('en-US', yearOpts);
+}
+
+/**
+ * Format a YYYY-MM-DD as "Jan 10, 2027" or returns the input if invalid.
+ */
+export function formatDateLong(value?: string): string | null {
+    if (!value) return null;
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return value;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+/**
+ * Format a number with thousands separators, suffixed with currency code.
+ */
+export function formatMoney(amount: number | undefined, currency?: string): string | null {
+    if (typeof amount !== 'number' || Number.isNaN(amount)) return null;
+    const formatted = amount.toLocaleString('en-US');
+    return currency ? `${formatted} ${currency}` : formatted;
 }

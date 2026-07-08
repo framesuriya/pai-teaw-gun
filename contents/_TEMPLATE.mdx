@@ -1,0 +1,122 @@
+---
+title: "Your Trip Title Here"        # required
+status: planning                    # planning | review (planning = shown on /trips)
+country: Japan                      # optional
+city: Osaka                         # optional
+location: "Osaka, Japan"            # optional — shown on cards
+category: "Travel"                  # optional
+startDate: 2027-05-01               # required if status: planning
+endDate: 2027-05-07                 # required if status: planning
+cover: /images/your-cover.jpg       # optional
+description: "Short one-liner shown under the title."   # optional
+
+budget: 30000                       # optional — headline total
+currency: THB                       # optional — shown next to budget
+participants:                       # optional
+  - Suriya
+  - Friend A
+
+# Each day: day number, optional date + title, then a list of time blocks.
+itinerary:
+  - day: 1
+    date: 2027-05-01
+    title: "Arrival & first night"
+    blocks:
+      - time: "Morning"
+        text: "Land, transit to hotel, freshen up."
+      - time: "Afternoon"
+        title: "Check-in"
+        text: "Drop bags."
+      - time: "Evening"
+        title: "Dinner spot"
+        text: "Walk over, no reservation needed."
+  - day: 2
+    date: 2027-05-02
+    title: "Main attraction"
+    blocks:
+      - time: "Morning"
+        text: "Arrive early to beat crowds."
+      - time: "Afternoon"
+        title: "Lunch"
+        text: "Local specialty."
+      - time: "Evening"
+        text: "Slow walk back, rest before dinner."
+
+# Optional. priority 1-3 stars shown next to each place.
+places:
+  - name: "Place name"
+    area: "Neighborhood"
+    priority: 3
+    mapUrl: "https://maps.google.com/?q=Place+name"
+    note: "Why this place, any tips."
+  - name: "Another spot"
+    area: "Different area"
+    priority: 2
+    mapUrl: "https://maps.google.com/?q=Another+spot"
+
+# Optional. planned = budget target. Add `actual:` rows later when you spend.
+budgetBreakdown:
+  - { category: "Flight",        planned: 10000 }
+  - { category: "Hotel",         planned: 8000 }
+  - { category: "Food",          planned: 4000 }
+  - { category: "Transport",     planned: 2000 }
+  - { category: "Tickets",       planned: 2000 }
+  - { category: "Shopping",      planned: 2000 }
+  - { category: "Emergency",     planned: 2000 }
+---
+
+# Your Trip Title Here
+
+The body of the MDX becomes the **Notes** section on the trip page. Use it for:
+- Trip vibe / tone
+- Things you still need to book
+- Packing list
+- Links to bookings
+- Anything that doesn't fit the structured fields above
+
+## Vibe
+
+One paragraph about the overall feel of the trip.
+
+## Still to confirm
+
+- [ ] Hotel booking
+- [ ] Flights
+- [ ] Travel insurance
+- [ ] Any reservations
+
+## Packing list
+
+- Light jacket
+- Walking shoes
+- Power adapter
+- Cash (¥20k starting)
+
+---
+
+<!--
+HOW TO USE THIS TEMPLATE
+========================
+1. Copy this file to: contents/<country>/<city>/<anything>.mdx
+2. Fill in the frontmatter at the top.
+3. Replace the body with your own notes.
+4. Save. The route /trips/<country>/<city> appears automatically.
+
+FRONTMATTER FIELDS
+==================
+Required: title, status, startDate, endDate
+Optional: country, city, location, category, cover, description,
+          budget, currency, participants, itinerary, places, budgetBreakdown
+
+FIELD SHAPES
+============
+itinerary[].blocks[].time   free text — "Morning" / "Afternoon" / "Evening" / "All day" / "08:00"
+itinerary[].blocks[].title  short label, optional
+itinerary[].blocks[].text   description, optional
+
+places[].priority           1-3 (controls star rating shown on the page)
+places[].mapUrl             full URL, opens in new tab
+
+budgetBreakdown[].planned   number, formatted with thousands separators
+budgetBreakdown[].actual    number, optional, only rendered if any row has it
+-->
