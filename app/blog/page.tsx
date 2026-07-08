@@ -1,6 +1,7 @@
 import { getPostsByStatus } from '@/lib/mdx';
 import Link from 'next/link';
 import { SiteShell } from '@/components/SiteShell';
+import Image from 'next/image';
 
 export const metadata = {
     title: 'Travel Blog — Pai Teaw Gun',
@@ -63,6 +64,26 @@ function ArrowIcon() {
     );
 }
 
+function formatDateRange(start?: string, end?: string) {
+    if (!start && !end) return null;
+    const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    const yearOpts: Intl.DateTimeFormatOptions = {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    };
+    if (start && end) {
+        const s = new Date(start);
+        const e = new Date(end);
+        if (s.getFullYear() === e.getFullYear()) {
+            return `${s.toLocaleDateString('en-US', opts)} – ${e.toLocaleDateString('en-US', yearOpts)}`;
+        }
+        return `${s.toLocaleDateString('en-US', yearOpts)} – ${e.toLocaleDateString('en-US', yearOpts)}`;
+    }
+    const only = new Date(start || end!);
+    return only.toLocaleDateString('en-US', yearOpts);
+}
+
 export default async function BlogIndexPage() {
     const posts = await getPostsByStatus('review');
 
@@ -110,70 +131,91 @@ export default async function BlogIndexPage() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {posts.map((post) => (
-                            <Link
-                                key={post.slug}
-                                href={`/blog/${post.slug}`}
-                                className="group relative flex flex-col overflow-hidden rounded-3xl bg-white dark:bg-gray-900 ring-1 ring-black/5 dark:ring-white/10 transition hover:-translate-y-1 hover:shadow-xl"
-                            >
-                                <div
-                                    aria-hidden="true"
-                                    className="h-32 bg-linear-to-br from-blue-500/90 via-purple-500/90 to-pink-500/90 relative"
+                        {posts.map((post) => {
+                            const range = formatDateRange(post.startDate, post.endDate);
+                            const fallbackDate = post.date
+                                ? new Date(post.date).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                })
+                                : null;
+                            return (
+                                <Link
+                                    key={post.slug}
+                                    href={`/blog/${post.slug.split('/').map(encodeURIComponent).join('/')}`}
+                                    className="group relative flex flex-col overflow-hidden rounded-3xl bg-white dark:bg-gray-900 ring-1 ring-black/5 dark:ring-white/10 transition hover:-translate-y-1 hover:shadow-xl"
                                 >
-                                    <div className="absolute inset-0 opacity-30 mix-blend-overlay bg-[radial-gradient(circle_at_30%_20%,white,transparent_40%),radial-gradient(circle_at_80%_70%,white,transparent_50%)]" />
-                                </div>
-
-                                <div className="p-6 flex-1 flex flex-col">
-                                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
-                                        {post.category && (
-                                            <span className="text-purple-600 dark:text-purple-400">
-                                                {post.category}
-                                            </span>
-                                        )}
-                                        {post.location && (
-                                            <>
-                                                <span className="text-gray-300 dark:text-gray-600">
-                                                    •
-                                                </span>
-                                                <span className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 normal-case tracking-normal">
-                                                    <PinIcon />
-                                                    {post.location}
-                                                </span>
-                                            </>
-                                        )}
+                                    <div
+                                        aria-hidden="true"
+                                        className="h-32 bg-linear-to-br from-blue-500/90 via-purple-500/90 to-pink-500/90 relative"
+                                    >
+                                        {post.cover ?
+                                            <Image
+                                                src={post.cover}
+                                                alt={`Cover image for ${post.title}`}
+                                                width={800}
+                                                height={400}
+                                                quality={80}
+                                                className="absolute inset-0 w-full h-full object-cover"
+                                            /> :
+                                            <div className="absolute inset-0 opacity-30 mix-blend-overlay bg-[radial-gradient(circle_at_30%_20%,white,transparent_40%),radial-gradient(circle_at_80%_70%,white,transparent_50%)]" />}
                                     </div>
 
-                                    <h2 className="mt-3 text-xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition">
-                                        {post.title}
-                                    </h2>
+                                    <div className="p-6 flex-1 flex flex-col">
+                                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+                                            {post.category && (
+                                                <span className="text-purple-600 dark:text-purple-400">
+                                                    {post.category}
+                                                </span>
+                                            )}
+                                            {post.location && (
+                                                <>
+                                                    <span className="text-gray-300 dark:text-gray-600">
+                                                        •
+                                                    </span>
+                                                    <span className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 normal-case tracking-normal">
+                                                        <PinIcon />
+                                                        {post.location}
+                                                    </span>
+                                                </>
+                                            )}
+                                        </div>
 
-                                    {post.description && (
-                                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
-                                            {post.description}
-                                        </p>
-                                    )}
+                                        <h2 className="mt-3 text-xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition">
+                                            {post.title}
+                                        </h2>
 
-                                    <div className="mt-5 pt-5 border-t border-black/5 dark:border-white/10 flex items-center justify-between">
-                                        {post.date ? (
-                                            <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                                <CalendarIcon />
-                                                {new Date(post.date).toLocaleDateString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                })}
-                                            </span>
-                                        ) : (
-                                            <span />
+                                        {post.description && (
+                                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 line-clamp-3 flex-1">
+                                                {post.description}
+                                            </p>
                                         )}
-                                        <span className="inline-flex items-center gap-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                            Read
-                                            <ArrowIcon />
-                                        </span>
+                                        {!post.description && <div className="flex-1" />}
+
+                                        <div className="mt-5 min-h-12 pt-4 border-t border-black/5 dark:border-white/10 flex items-center justify-between">
+                                            {range ? (
+                                                <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    <CalendarIcon />
+                                                    {range}
+                                                </span>
+                                            ) : fallbackDate ? (
+                                                <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    <CalendarIcon />
+                                                    {fallbackDate}
+                                                </span>
+                                            ) : (
+                                                <span />
+                                            )}
+                                            <span className="inline-flex items-center gap-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                                Read
+                                                <ArrowIcon />
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            </Link>
-                        ))}
+                                </Link>
+                            );
+                        })}
                     </div>
                 )}
             </section>

@@ -170,7 +170,7 @@ export default async function TripsIndexPage() {
                             return (
                                 <li key={trip.slug}>
                                     <Link
-                                        href={`/trips/${trip.slug}`}
+                                        href={`/trips/${trip.slug.split('/').map(encodeURIComponent).join('/')}`}
                                         className="group relative flex h-full flex-col overflow-hidden rounded-3xl bg-white dark:bg-gray-900 ring-1 ring-black/5 dark:ring-white/10 transition hover:-translate-y-1 hover:shadow-xl"
                                     >
                                         <div className="p-7 flex-1 flex flex-col">

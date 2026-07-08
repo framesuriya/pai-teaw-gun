@@ -18,6 +18,7 @@ export interface BlogPost {
     endDate?: string;
     content: string;
     filePath: string;
+    cover: string;
 }
 
 /**
@@ -86,6 +87,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
             endDate: data.endDate,
             content,
             filePath,
+            cover: data.cover,
         };
     });
 

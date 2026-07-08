@@ -3,6 +3,7 @@ import { getAllPosts, getPostBySlug } from '@/lib/mdx';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import Link from 'next/link';
 import { SiteShell } from '@/components/SiteShell';
+import { mdxComponents } from '@/components/mdx-components';
 
 export async function generateStaticParams() {
     const posts = await getAllPosts();
@@ -90,8 +91,11 @@ export default async function TripDetail({
 
     if (!post) notFound();
 
-    const range = formatDateRange(post.startDate, post.endDate);
     const isPlanning = post.status === 'planning';
+    // Planning posts show trip dates (startDate/endDate), review posts show review date
+    const range = isPlanning
+        ? formatDateRange(post.startDate, post.endDate)
+        : formatDateRange(post.date, undefined);
 
     return (
         <SiteShell active="trips">
@@ -164,7 +168,7 @@ export default async function TripDetail({
 
                     <div className="mt-12 rounded-3xl bg-white dark:bg-gray-900 ring-1 ring-black/5 dark:ring-white/10 p-6 sm:p-10 shadow-sm">
                         <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:tracking-tight prose-a:text-purple-600 dark:prose-a:text-purple-400">
-                            <MDXRemote source={post.content} />
+                            <MDXRemote source={post.content} components={mdxComponents} />
                         </div>
                     </div>
 
